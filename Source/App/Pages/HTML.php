@@ -94,8 +94,8 @@ abstract class HTML
         $footer = $this->footer($scripts);
         $html = "{$head}{$body}{$footer}";
 
-        return preg_replace("/> +</", "><", preg_replace(
-            "/\r\n/i",
+        return preg_replace("/> +</", "><", str_replace(
+            ["\r", "\n"],
             "",
             preg_replace(
                 "/ +/i",

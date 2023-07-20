@@ -2,6 +2,7 @@
 
 namespace Source\App\Controllers;
 
+use Source\App\Pages\Card as CardPage;
 use Source\App\Pages\CardForm as CardFormPage;
 use Source\Core\Database\ORMs\Card as CardORM;
 
@@ -11,8 +12,6 @@ class Card
 
     private function post(): ?array
     {
-
-
         $postValidation = [
             "name" => FILTER_SANITIZE_SPECIAL_CHARS,
             "description" => FILTER_SANITIZE_SPECIAL_CHARS
@@ -22,7 +21,12 @@ class Card
 
     public function index(): void
     {
-        $this->form();
+        $orm = new CardORM();
+        $cardPage = new CardPage([
+            "cards" => $orm->getAll()
+        ]);
+
+        echo $cardPage;
     }
 
     public function form(): void
@@ -48,6 +52,10 @@ class Card
         }
 
         $orm = new CardORM($data["name"], $data["description"]);
-        echo $orm;
+        $success = $orm->persist();
+
+        echo json_encode([
+            "success" => $success
+        ]);
     }
 }

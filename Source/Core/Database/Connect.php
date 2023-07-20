@@ -35,7 +35,7 @@ class Connect
                     self::OPTIONS
                 );
             } catch(PDOException $exception) {
-                die("<h1>Erro ao conectar</h1>");
+                die("<h1>Erro ao conectar ao banco de dados</h1>");
             }
         }
 

@@ -2,10 +2,12 @@
 
 namespace Source\Core\Database\ORMs;
 
-use \DateTime;
+use Source\Core\Database\Sql;
 
 class Card
 {
+    private const ENTITY = "yugioh_cards";
+
     private ?int $id;
     private ?string $name;
     private ?string $description;
@@ -44,7 +46,7 @@ class Card
         return $this->name;
     }
 
-    public function setName(string $name): void
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
@@ -54,14 +56,14 @@ class Card
         return $this->description;
     }
 
-    public function setDescription(string $description): void
+    public function setDescription(?string $description): void
     {
         $this->description = $description;
     }
 
     public function getHash(): ?string
     {
-        return isset($this->hash) ? $this->hash : null;
+        return $this->hash ?? null;
     }
 
     private function setHash(): void
@@ -69,5 +71,21 @@ class Card
         if (empty($this->getHash())) {
             $this->hash = md5(strtotime("now"));
         }
+    }
+
+    public function getAll(): array
+    {
+        return Sql::getAll(self::ENTITY);
+    }
+
+    public function persist(): bool
+    {
+        $data = [
+            "name" => $this->getName(),
+            "description" => $this->getDescription(),
+            "hash" => $this->getHash()
+        ];
+
+        return Sql::insert(self::ENTITY, $data);
     }
 }

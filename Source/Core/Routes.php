@@ -6,50 +6,41 @@ use Source\App\Controllers\Card;
 
 class Routes
 {
-    public function route($requestURI)
+    private array $routes;
+
+    public function route(string $resource, string $controllerAndMethod): void
     {
-        switch ($requestURI) {
-            case "/":
-                $this->card("/");
-                break;
+        [$className, $method] = explode(":", $controllerAndMethod);
+        $className = "Source\\App\\Controllers\\{$className}";
 
-            case "/card":
-            case "/card/":
-                $this->card("/");
-                break;
 
-            case "/card/form":
-            case "/card/form/":
-                $this->card("/form");
-                break;
+        $this->routes[$resource] = function() use ($className, $method){
+            $reflection = new \ReflectionClass($className);
 
-            case "/card/create":
-            case "/card/create/":
-                $this->card("/create");
-                break;
-
-            default:
-                http_response_code(404);
-                echo "Página não encontrada";
-        }
+            $obj = $reflection->newInstance();
+            call_user_func([$obj, $method]);
+        };
     }
 
-    private function card(string $requestURI)
+    private function error404(): void
     {
-        $card = new Card();
+        http_response_code(404);
 
-        $action = [
-            "/" => function () use ($card) {
-                $card->index();
-            },
-            "/form" => function () use ($card) {
-                $card->form();
-            },
-            "/create" => function () use ($card) {
-                $card->create();
-            }
-        ];
+        echo "Página não encontrada";
+    }
 
-        $action[$requestURI]();
+    public function dispatch():void
+    {
+        $request = preg_replace("/\/$/i", "",
+            str_replace(CONF_BASE_REQUEST_URI, "/", $_SERVER['REQUEST_URI'])
+        );
+        $request = $request !== "" ? $request : "/";
+
+        if(!in_array($request, array_keys($this->routes))) {
+            $this->error404();
+            return;
+        }
+
+        $this->routes[$request]();
     }
 }
